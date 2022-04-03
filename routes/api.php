@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\LocationsController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -30,8 +31,16 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
     Route::group(['middleware'=>'JWTMiddleware'],function (){
         Route::post('logout',[AuthController::class,'logout']);
     });
-    ############### End Logout ##################
+    ############### EndLogout ##################
 
+    ############### Reset Password ####################
+    Route::post('/resetPass', [ForgotPasswordController::class,'postForgotPass']);
+    Route::get('/reset-password/{code}',[ForgotPasswordController::class,'resetPassword']);
+    Route::post('/change-pass/',[ForgotPasswordController::class,'changePass']);
+    ############### End Reset Password ####################
+
+
+    ############### End Logout ##################
 
     ############### Profile ##################
     Route::group(['middleware'=>'JWTMiddleware'], function(){

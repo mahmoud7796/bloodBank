@@ -88,7 +88,6 @@ class AuthController extends Controller
         }
     }
 
-
     public function logout(Request $request){
         try {
             $token = $request->bearerToken();
@@ -104,8 +103,9 @@ class AuthController extends Controller
             }
 
         }catch (\Exception $ex){
-            return $ex;
+          //  return $ex;
             return $this->returnError('','Something Went Wrong');
         }
     }
+
 }
