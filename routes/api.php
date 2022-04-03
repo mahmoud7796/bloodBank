@@ -40,12 +40,11 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
     ############### End Profile ##################
 
     ############### Governorate and City  ##################
-    Route::get('/governorate',[LocationsController::class,'allGovernorates']);
-    Route::get('city/{id}',[LocationsController::class,'citiesByGovernorateId']);
+    Route::group(['middleware'=>'JWTMiddleware'], function(){
+        Route::get('/governorate',[LocationsController::class,'allGovernorates']);
+        Route::get('city/{id}',[LocationsController::class,'citiesByGovernorateId']);
+    });
     ############### End Governorate and City  ##################
-
-
-
 
 });
 
