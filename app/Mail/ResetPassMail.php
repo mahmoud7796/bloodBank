@@ -34,6 +34,6 @@ class ResetPassMail extends Mailable
         $resetPassToken= $this->resetPassToken;
         $user = $this->user;
         return $this->subject('Mail from BloodBankApp')
-            ->view('site.users.auth.resetPassEmailNotification',compact('user','resetPassToken'));
+            ->view('users.auth.resetPassEmailNotification',compact('user','resetPassToken'));
     }
 }

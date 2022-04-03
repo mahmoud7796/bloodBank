@@ -117,4 +117,5 @@ class User extends Authenticatable implements  JWTSubject
     public function governorate(){
         return $this->belongsTo(Governorate::class,'governorate_id');
     }
+
 }

@@ -3,17 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\ForgotPassRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiTrait;
-use App\Jobs\ResetPassJob;
-use App\Models\PasswordReset;
-use App\Models\Request;
 use App\Models\User;
 use Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
 
 class ProfileController extends Controller
 {
@@ -44,6 +40,36 @@ class ProfileController extends Controller
             return $this->returnData('user', UserResource::collection($user));
         } catch (\Exception $ex) {
             return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function changePassword(Request $request)
+    {
+        try{
+            $validator = \Validator::make($request->all(),[
+                "password"=>"required|confirmed|string",
+                "oldPassword"=>"required|string"
+            ]);
+            if ($validator->fails()){
+                return $this->returnError('E001',$validator->messages());
+            }
+            $currentPass = Auth::user()->password;
+            if (Hash::check($request->oldPassword, $currentPass)) {
+                $user = User::find(Auth::id());
+                $user -> password = Hash::make($request->password);
+                $user -> save();
+
+                return response()->json([
+                    'status' => true,
+                    'msg' => 'Your password changed successfully',
+                ]);
+            }else{
+                return $this->returnError('408', 'Old password is incorrect');
+            }
+
+        }catch (\Exception $ex){
+            return $ex;
+            return $this->returnError('408', 'Something error please try again later');
         }
     }
 }

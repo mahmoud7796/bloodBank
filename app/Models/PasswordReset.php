@@ -10,9 +10,9 @@ class PasswordReset extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'email',
         'token',
     ];
-    public $timestamps=false;
 
 }

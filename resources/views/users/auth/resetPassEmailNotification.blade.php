@@ -16,13 +16,15 @@
       <div class="card-body p-5">
         <!-- Nested Row within Card Body -->
         <div class="row pt-5">
-          <h3 style="font: normal normal bold 20px/32px Cairo;">Hello {{$user->fullName}},</h3>
+          <h3 style="font: normal normal bold 20px/32px Cairo;">Hello {{$user->name}},</h3>
         </div>
         <div class="row pt-5">
-            Please click on the button below to reset your password.</h6>
         </div>
         <!-- Verify btn -->
-        <div class="row pt-3"><a  href="{{url('reset-password/').'/'.$resetPassToken->token}}" style="font: 20px/32px Cairo; color: #FFFFFF; background: #0D67CB 0% 0% no-repeat padding-box; box-shadow: 2px 2px 4px #00000029; border-radius: 15px; width: 211px; height: 53px;" class="btn btn-block" id="">Reset Your Password</a> </div>
+        <div class="row pt-3">
+            <h4>Here is the code to reset password</h4>
+            <h1 id="">{{$resetPassToken->token}}</h1>
+        </div>
         <div class="row pt-3">
         </div>
       </div>

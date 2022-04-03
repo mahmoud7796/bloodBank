@@ -39,12 +39,11 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
     Route::post('/change-pass/',[ForgotPasswordController::class,'changePass']);
     ############### End Reset Password ####################
 
-
-    ############### End Logout ##################
-
     ############### Profile ##################
     Route::group(['middleware'=>'JWTMiddleware'], function(){
         Route::apiResource('profile',ProfileController::class);
+        Route::post('/change-password', [ProfileController::class,'changePassword']);
+
     });
     ############### End Profile ##################
 
