@@ -90,17 +90,22 @@ class AuthController extends Controller
 
 
     public function logout(Request $request){
-        $token = $request->bearerToken();
-        if ($token){
-            try {
-                JWTAuth::setToken($token)->invalidate(); //logout
-                return $this->returnSuccessMessage('Logged out successfully');
-            }catch (TokenInvalidException $e){
+        try {
+            $token = $request->bearerToken();
+            if ($token){
+                try {
+                    JWTAuth::setToken($token)->invalidate(); //logout
+                    return $this->returnSuccessMessage('Logged out successfully');
+                }catch (TokenInvalidException $e){
                     return $this->returnError('','Something Went Wrong');
+                }
+            }else{
+                $this -> returnError('','Token invalid');
             }
 
-        }else{
-            $this -> returnError('','Token invalid');
+        }catch (\Exception $ex){
+            return $ex;
+            return $this->returnError('','Something Went Wrong');
         }
     }
 }
