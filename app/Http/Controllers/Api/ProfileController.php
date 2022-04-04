@@ -43,6 +43,27 @@ class ProfileController extends Controller
         }
     }
 
+    public function update(Request $request,$userId)
+    {
+        try {
+            $validator = \Validator::make($request->all(),[
+                "password"=>"required|confirmed|string",
+                "oldPassword"=>"required|string"
+            ]);
+            if ($validator->fails()){
+                return $this->returnError('E001',$validator->messages());
+            }
+            $authUser = Auth::id();
+            if($authUser!=$userId){
+                return $this->returnError('502', 'Not authorized');
+            }
+            $user = User::whereId($authUser)->get();
+            return $this->returnData('user', UserResource::collection($user));
+        } catch (\Exception $ex) {
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
     public function changePassword(Request $request)
     {
         try{

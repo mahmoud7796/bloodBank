@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\LocationsController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\RequestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,6 +47,12 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
 
     });
     ############### End Profile ##################
+
+    ############### Request ##################
+    Route::group(['middleware'=>'JWTMiddleware'], function(){
+        Route::apiResource('request',RequestController::class);
+    });
+    ############### End Request ##################
 
     ############### Governorate and City  ##################
     Route::group(['middleware'=>'JWTMiddleware'], function(){
