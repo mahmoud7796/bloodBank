@@ -10,7 +10,6 @@ function SaveImage($photo,$folder){
 }
 
 function deleteOldImage($imageName,$imagePath){
-    \Illuminate\Support\Facades\Storage::delete('/public/dashboard_files/'.$imagePath.'/'.$imageName);
     \Illuminate\Support\Facades\File::delete(public_path('dashboard_files/'.$imagePath.'/'.$imageName));
 }
 

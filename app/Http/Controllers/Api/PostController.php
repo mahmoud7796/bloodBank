@@ -3,30 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\RequestResource;
+use App\Http\Resources\PostResource;
 use App\Http\Traits\ApiTrait;
+use App\Models\Post;
 use App\Models\Request;
 
 
-class RequestController extends Controller
+class PostController extends Controller
 {
     use ApiTrait;
 
     public function index()
     {
         try {
-            $request = Request::with('city','governorate','user')->get();
-            return $this->returnData('request', RequestResource::collection($request));
-        } catch (\Exception $ex) {
-            return $this->returnError('408', 'Something went wrong');
-        }
-    }
-
-    public function show($userid)
-    {
-        try {
-            $request = Request::whereuserId($userid)->with('city','governorate','user')->get();
-            return $this->returnData('request', RequestResource::collection($request));
+            $posts = Post::get();
+            return $this->returnData('posts', PostResource::collection($posts));
         } catch (\Exception $ex) {
             return $this->returnError('408', 'Something went wrong');
         }

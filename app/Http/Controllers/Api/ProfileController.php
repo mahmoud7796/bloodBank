@@ -9,6 +9,7 @@ use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use DB;
 
 
 class ProfileController extends Controller
@@ -18,7 +19,7 @@ class ProfileController extends Controller
     public function index()
     {
         try {
-            $user = User::with('governorate', 'city')->get();
+            $user = User::whereAvailableForDonate(1)->with('governorate', 'city')->get();
             if (!$user) {
                 return $this->returnError('404', 'Request not found');
             }
@@ -46,20 +47,58 @@ class ProfileController extends Controller
     public function update(Request $request,$userId)
     {
         try {
-            $validator = \Validator::make($request->all(),[
-                "password"=>"required|confirmed|string",
-                "oldPassword"=>"required|string"
+            $validator=\Validator::make($request->all(),[
+                'name' => 'required|string|max:255',
+                'email'=>'required|email|string|max:255',
+                'phone_number'=>'nullable|string|max:255',
+                'profile_picture'=>'nullable|image',
+                'password'=>'required|string|max:255|confirmed',
+                'date_of_birth'=>'date',
+                'last_donate_time'=>'nullable',
+                'blood_type'=>'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
+                'governorate_id'=>'required',
+                'city_id'=>'required',
+                'available_for_donate'=>'nullable',
             ]);
+
             if ($validator->fails()){
                 return $this->returnError('E001',$validator->messages());
             }
-            $authUser = Auth::id();
-            if($authUser!=$userId){
-                return $this->returnError('502', 'Not authorized');
+            $user = User::find($userId);
+            if(!$user){
+                return $this->returnError('404', 'Not found');
             }
-            $user = User::whereId($authUser)->get();
-            return $this->returnData('user', UserResource::collection($user));
+            DB::beginTransaction();
+            if($request->hasFile('profile_picture')){
+                deleteOldImage($user->profile_picture,'users_pictures');
+                $imgPath =  SaveImage($request->file('profile_picture'),'/dashboard_files/users_pictures');
+                $user->update([
+                    'profile_picture' => $imgPath,
+                ]);
+            }
+            if(!$request->has('available_for_donate')){
+                $request->request->add(['available_for_donate'=>0]);
+            } else{
+                $request->request->add(['available_for_donate'=>1]);
+            }
+            $user->update([
+                'name'=>$request->name,
+                'email'=>$request->email,
+                'phone_number'=>$request->phone_number,
+                'password'=>bcrypt($request->password),
+                'date_of_birth'=>$request->date_of_birth,
+                'blood_type'=>$request->blood_type,
+                'governorate_id'=>$request->governorate_id,
+                'city_id'=>$request->city_id,
+                'last_donate_time'=>$request->last_donate_time,
+                'available_for_donate'=>$request->available_for_donate,
+            ]);
+            DB::commit();
+            return $this->returnSuccessMessage('Your info updated successfully');
         } catch (\Exception $ex) {
+
+            DB::rollBack();
+            return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }
