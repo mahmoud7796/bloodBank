@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RequestResource;
+use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiTrait;
 use App\Models\Request;
+use App\Models\User;
 
 
 class RequestController extends Controller
@@ -25,9 +27,19 @@ class RequestController extends Controller
     public function show($userid)
     {
         try {
-            $request = Request::whereuserId($userid)->with('city','governorate','user')->get();
-            return $this->returnData('request', RequestResource::collection($request));
+           $request = Request::whereUserId($userid)->with('city','governorate')->get();
+           if (!$request){
+               return $this->returnError('404', 'Not Found');
+           }
+            $user = User::whereId($userid)->first();
+            if (!$user){
+                return $this->returnError('404', 'Not Found');
+            }
+            $success['requests'] = RequestResource::collection($request);
+            $success['user'] = new UserResource($user);
+            return $this->returnData('request', $success);
         } catch (\Exception $ex) {
+            return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }
