@@ -17,6 +17,9 @@ class PostController extends Controller
     {
         try {
             $posts = Post::get();
+            if (!$posts){
+                return $this->returnError('404', 'Not Found');
+            }
             return $this->returnData('posts', PostResource::collection($posts));
         } catch (\Exception $ex) {
             return $this->returnError('408', 'Something went wrong');
