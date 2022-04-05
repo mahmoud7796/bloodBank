@@ -8,6 +8,8 @@ use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiTrait;
 use App\Models\Request;
 use App\Models\User;
+use Auth;
+use Illuminate\Support\Carbon;
 
 
 class RequestController extends Controller
@@ -17,7 +19,11 @@ class RequestController extends Controller
     public function index()
     {
         try {
-            $request = Request::with('city','governorate','user')->get();
+            $date = new Carbon;
+            $request = Request::where('request_expiredDate', '>', $date )->with('city','governorate','user')->get();
+            if (!$request){
+                return $this->returnError('404', 'Not Found');
+            }
             return $this->returnData('request', RequestResource::collection($request));
         } catch (\Exception $ex) {
             return $this->returnError('408', 'Something went wrong');
@@ -27,7 +33,7 @@ class RequestController extends Controller
     public function show($userid)
     {
         try {
-           $request = Request::whereUserId($userid)->with('city','governorate')->get();
+            $request = Request::whereUserId($userid)->with('city','governorate')->get();
            if (!$request){
                return $this->returnError('404', 'Not Found');
            }
@@ -35,11 +41,15 @@ class RequestController extends Controller
             if (!$user){
                 return $this->returnError('404', 'Not Found');
             }
+            $requestUserId = Request::whereUserId($userid)->first();
+            if (Auth::id() !== $requestUserId->user_id) {
+                return $this->returnError('501', 'Not Authorized');
+            }
             $success['requests'] = RequestResource::collection($request);
             $success['user'] = new UserResource($user);
             return $this->returnData('request', $success);
         } catch (\Exception $ex) {
-            return $ex;
+           // return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }
