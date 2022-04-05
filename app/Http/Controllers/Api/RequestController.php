@@ -30,30 +30,6 @@ class RequestController extends Controller
         }
     }
 
-    public function show($userid)
-    {
-        try {
-            $request = Request::whereUserId($userid)->with('city','governorate')->get();
-           if (!$request){
-               return $this->returnError('404', 'Not Found');
-           }
-            $user = User::whereId($userid)->first();
-            if (!$user){
-                return $this->returnError('404', 'Not Found');
-            }
-            $requestUserId = Request::whereUserId($userid)->first();
-            if (Auth::id() !== $requestUserId->user_id) {
-                return $this->returnError('501', 'Not Authorized');
-            }
-            $success['requests'] = RequestResource::collection($request);
-            $success['user'] = new UserResource($user);
-            return $this->returnData('request', $success);
-        } catch (\Exception $ex) {
-           // return $ex;
-            return $this->returnError('408', 'Something went wrong');
-        }
-    }
-
     public function store(\Illuminate\Http\Request $request)
     {
         try {
@@ -87,6 +63,66 @@ class RequestController extends Controller
             return $this->returnError('408', 'Something went wrong');
         }
     }
+
+    public function show($requestId)
+    {
+        try {
+             $request = Request::find($requestId);
+            if(!$request){
+                return $this->returnError('404', 'Not found');
+            }
+            if (Auth::id() !== $request->user_id) {
+                return $this->returnError('501', 'Not Authorized');
+            }
+            return $this->returnData('request', new RequestResource($request));
+        } catch (\Exception $ex) {
+            //return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function destroy($requestId)
+    {
+        try {
+            $request = Request::find($requestId);
+            if(!$request){
+                return $this->returnError('404', 'Not found');
+            }
+            if (Auth::id() !== $request->user_id) {
+                return $this->returnError('501', 'Not Authorized');
+            }
+            $request->delete();
+            return $this->returnSuccessMessage('Your request deleted successfully');
+        } catch (\Exception $ex) {
+            //return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function userRequest($userid)
+    {
+        try {
+            $request = Request::whereUserId($userid)->with('city','governorate')->get();
+            if (!$request){
+                return $this->returnError('404', 'Not Found');
+            }
+            $user = User::whereId($userid)->first();
+            if (!$user){
+                return $this->returnError('404', 'Not Found');
+            }
+            $requestUserId = Request::whereUserId($userid)->first();
+            if (Auth::id() !== $requestUserId->user_id) {
+                return $this->returnError('501', 'Not Authorized');
+            }
+            $success['requests'] = RequestResource::collection($request);
+            $success['user'] = new UserResource($user);
+            return $this->returnData('request', $success);
+        } catch (\Exception $ex) {
+            // return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
 
 
 }

@@ -45,6 +45,8 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
     Route::group(['middleware'=>'JWTMiddleware'], function(){
         Route::apiResource('profile',ProfileController::class);
         Route::post('/change-password', [ProfileController::class,'changePassword']);
+        Route::patch('/change-photo/{userId}', [ProfileController::class,'changePhoto']);
+        Route::patch('/change-availability', [ProfileController::class,'changeAvailableForDonate']);
 
     });
     ############### End Profile ##################
@@ -52,6 +54,8 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
     ############### Requests ##################
     Route::group(['middleware'=>'JWTMiddleware'], function(){
         Route::apiResource('requests',RequestController::class);
+        Route::get('/my-requests/{userId}', [RequestController::class,'userRequest']);
+
     });
     ############### End Requests ##################
 

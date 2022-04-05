@@ -19,7 +19,7 @@ class ProfileController extends Controller
     public function index()
     {
         try {
-            $user = User::whereAvailableForDonate(1)->with('governorate', 'city')->get();
+            $user = User::with('governorate', 'city')->get();
             if (!$user) {
                 return $this->returnError('404', 'Request not found');
             }
@@ -43,6 +43,7 @@ class ProfileController extends Controller
             return $this->returnError('408', 'Something went wrong');
         }
     }
+
 
     public function update(Request $request,$userId)
     {
@@ -98,7 +99,40 @@ class ProfileController extends Controller
             return $this->returnSuccessMessage('Your info updated successfully');
         } catch (\Exception $ex) {
             DB::rollBack();
-           // return $ex;
+            // return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function changePhoto(Request $request,$userId)
+    {
+        try {
+            $validator=\Validator::make($request->all(),[
+                'profile_picture'=>'nullable|image|mimes:jpg,jpeg,png',
+            ]);
+
+            if ($validator->fails()){
+                return $this->returnError('E001',$validator->messages());
+            }
+            $user = User::find($userId);
+            if(!$user){
+                return $this->returnError('404', 'Not found');
+            }
+            $authUser = Auth::id();
+            if($authUser!=$userId){
+                return $this->returnError('502', 'Not authorized');
+            }
+            if($request->hasFile('profile_picture')){
+                deleteOldImage($user->profile_picture,'users_pictures');
+                $imgPath = SaveImage($request->file('profile_picture'),'/dashboard_files/users_pictures');
+                $user->update([
+                    'profile_picture' => $imgPath,
+                ]);
+            }
+            return $this->returnSuccessMessage('Your photo updated successfully');
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            // return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }
@@ -118,18 +152,29 @@ class ProfileController extends Controller
                 $user = User::find(Auth::id());
                 $user -> password = Hash::make($request->password);
                 $user -> save();
-
-                return response()->json([
-                    'status' => true,
-                    'msg' => 'Your password changed successfully',
-                ]);
+                return $this->returnSuccessMessage('Your password changed successfully');
             }else{
                 return $this->returnError('408', 'Old password is incorrect');
             }
 
         }catch (\Exception $ex){
-          //  return $ex;
+           // return $ex;
             return $this->returnError('408', 'Something error please try again later');
+        }
+    }
+
+    public function changeAvailableForDonate(Request $request)
+    {
+        try {
+            $authId = Auth::id();
+            $user = User::find($authId);
+             $availableForDonate= checkIfDonorAvailableForDonateRequest($request->available_for_donate);
+            $user->update([
+               'available_for_donate' =>$availableForDonate
+            ]);
+            return $this->returnSuccessMessage('availability changed successfully');
+        } catch (\Exception $ex) {
+            return $this->returnError('408', 'Something went wrong');
         }
     }
 }
