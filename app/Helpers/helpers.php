@@ -16,3 +16,12 @@ function deleteOldImage($imageName,$imagePath){
 function viewImage($imageName,$imagePath){
     return $imagePath . $imageName;
 }
+function checkIfDonorAvailableForDonateRequest($request){
+    if(!$request){
+        return 0;
+    }
+    return 1;
+}
+
+
+

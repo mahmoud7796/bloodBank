@@ -64,23 +64,24 @@ class ProfileController extends Controller
             if ($validator->fails()){
                 return $this->returnError('E001',$validator->messages());
             }
+
             $user = User::find($userId);
             if(!$user){
                 return $this->returnError('404', 'Not found');
             }
+            $authUser = Auth::id();
+            if($authUser!=$userId){
+                return $this->returnError('502', 'Not authorized');
+            }
             DB::beginTransaction();
             if($request->hasFile('profile_picture')){
                 deleteOldImage($user->profile_picture,'users_pictures');
-                $imgPath =  SaveImage($request->file('profile_picture'),'/dashboard_files/users_pictures');
+                $imgPath = SaveImage($request->file('profile_picture'),'/dashboard_files/users_pictures');
                 $user->update([
                     'profile_picture' => $imgPath,
                 ]);
             }
-            if(!$request->has('available_for_donate')){
-                $request->request->add(['available_for_donate'=>0]);
-            } else{
-                $request->request->add(['available_for_donate'=>1]);
-            }
+            $availableForDonate= checkIfDonorAvailableForDonateRequest($request->available_for_donate);
             $user->update([
                 'name'=>$request->name,
                 'email'=>$request->email,
@@ -91,14 +92,13 @@ class ProfileController extends Controller
                 'governorate_id'=>$request->governorate_id,
                 'city_id'=>$request->city_id,
                 'last_donate_time'=>$request->last_donate_time,
-                'available_for_donate'=>$request->available_for_donate,
+                'available_for_donate'=>$availableForDonate,
             ]);
             DB::commit();
             return $this->returnSuccessMessage('Your info updated successfully');
         } catch (\Exception $ex) {
-
             DB::rollBack();
-            return $ex;
+           // return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }
@@ -128,7 +128,7 @@ class ProfileController extends Controller
             }
 
         }catch (\Exception $ex){
-            return $ex;
+          //  return $ex;
             return $this->returnError('408', 'Something error please try again later');
         }
     }
