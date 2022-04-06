@@ -177,4 +177,32 @@ class ProfileController extends Controller
             return $this->returnError('408', 'Something went wrong');
         }
     }
+
+    public function filter(Request $request)
+    {
+        try {
+            $validator = \Validator::make($request->all(),[
+                'blood_type'=>'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
+            ]);
+            if ($validator->fails()){
+                return $this->returnError('E001',$validator->messages());
+            }
+            $donors = User::whereBloodType($request->blood_type)
+                ->orWhereHas('governorate',function ($q) use ($request) {
+                    $q->where('governorate_name_en','like', '%'.$request->governorate_name_en.'%');
+            })
+                ->orWhereHas('city',function ($q) use ($request){
+                     $q->where('city_name_en','like', '%'.$request->city_name_en.'%');
+            })->get();
+            if(!$donors){
+                return $this->returnError('408', 'there is no result');
+            }
+            return $this->returnData('donors', UserResource::collection($donors));
+        } catch (\Exception $ex) {
+           // return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+
 }

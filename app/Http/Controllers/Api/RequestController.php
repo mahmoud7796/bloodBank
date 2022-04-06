@@ -123,6 +123,4 @@ class RequestController extends Controller
         }
     }
 
-
-
 }

@@ -47,7 +47,7 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
         Route::post('/change-password', [ProfileController::class,'changePassword']);
         Route::patch('/change-photo/{userId}', [ProfileController::class,'changePhoto']);
         Route::patch('/change-availability', [ProfileController::class,'changeAvailableForDonate']);
-
+        Route::post('/filter-donors', [ProfileController::class,'filter']);
     });
     ############### End Profile ##################
 
