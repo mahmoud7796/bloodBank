@@ -7,6 +7,7 @@ use App\Http\Resources\RequestResource;
 use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiTrait;
 use App\Models\Request;
+use App\Models\RequesterRequested;
 use App\Models\User;
 use Auth;
 use Illuminate\Support\Carbon;
@@ -122,5 +123,7 @@ class RequestController extends Controller
             return $this->returnError('408', 'Something went wrong');
         }
     }
+
+
 
 }

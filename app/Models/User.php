@@ -73,7 +73,9 @@ class User extends Authenticatable implements  JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'pivot'
     ];
+
 
     /**
      * The attributes that should be cast.
@@ -116,6 +118,14 @@ class User extends Authenticatable implements  JWTSubject
 
     public function governorate(){
         return $this->belongsTo(Governorate::class,'governorate_id');
+    }
+
+    public function requester(){
+        return $this->belongsToMany(self::class, 'requester_requested', 'requester_id','requested_id','id','id');
+    }
+
+    public function requested(){
+        return $this->belongsToMany(self::class, 'requester_requested', 'requested_id','requester_id','id','id');
     }
 
 }

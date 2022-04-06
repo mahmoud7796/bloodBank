@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Http\Traits\ApiTrait;
+use App\Models\RequesterRequested;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
@@ -188,18 +189,83 @@ class ProfileController extends Controller
                 return $this->returnError('E001',$validator->messages());
             }
             $donors = User::whereBloodType($request->blood_type)
-                ->orWhereHas('governorate',function ($q) use ($request) {
+                ->WhereHas('governorate',function ($q) use ($request) {
                     $q->where('governorate_name_en','like', '%'.$request->governorate_name_en.'%');
             })
-                ->orWhereHas('city',function ($q) use ($request){
+               ->whereHas('city',function ($q) use ($request){
                      $q->where('city_name_en','like', '%'.$request->city_name_en.'%');
             })->get();
+
             if(!$donors){
                 return $this->returnError('408', 'there is no result');
             }
             return $this->returnData('donors', UserResource::collection($donors));
         } catch (\Exception $ex) {
            // return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function sendRequest(Request $request)
+    {
+        try {
+            $validator = \Validator::make($request->all(),[
+                'requester_id' => 'required|integer',
+                'requested_id'=>'required|integer',
+            ]);
+            if ($validator->fails()){
+                return $this->returnError('E001',$validator->messages());
+            }
+            RequesterRequested::create([
+                'requester_id' => Auth::id(),
+                'requested_id'=>$request->requested_id,
+            ]);
+            return $this->returnSuccessMessage('Donate request was sent successfully');
+        } catch (\Exception $ex) {
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function userRequests()
+    {
+        try {
+            $userRequest = User::whereId(Auth::id())->with('requested')->get();
+            return $this->returnData('userRequests', $userRequest);
+        } catch (\Exception $ex) {
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+    public function isUserSentRequest($requestedId)
+    {
+        try {
+            $user = RequesterRequested::whereRequesterId(Auth::id())->first();
+            if(!$user | $user->requested_id!=$requestedId){
+                return $this->returnSuccessMessage('unrequested');
+            }
+                return $this->returnSuccessMessage('Request is sent');
+        } catch (\Exception $ex) {
+            //return $ex;
+            return $this->returnError('408', 'Something went wrong');
+        }
+    }
+
+
+    public function deleteRequest($requestedId)
+    {
+        try {
+            $authId = Auth::id();
+            $userRequest = RequesterRequested::whereRequestedId($requestedId)->first();
+            if(!$userRequest){
+                return $this->returnError('408', 'Not found');
+            }
+            if ($authId !== $userRequest->requester_id) {
+                return $this->returnError('501', 'Not Authorized');
+            }
+            $userRequest->delete();
+            return $this->returnSuccessMessage('Request deleted successfully');
+        } catch (\Exception $ex) {
+            //return $ex;
             return $this->returnError('408', 'Something went wrong');
         }
     }

@@ -48,6 +48,11 @@ Route::group(['middleware' => ['api', 'ApiPassword','ChangeLanguage']],function 
         Route::patch('/change-photo/{userId}', [ProfileController::class,'changePhoto']);
         Route::patch('/change-availability', [ProfileController::class,'changeAvailableForDonate']);
         Route::post('/filter-donors', [ProfileController::class,'filter']);
+        Route::get('/user-requests', [ProfileController::class,'userRequests']);
+        Route::post('/send-request', [ProfileController::class,'sendRequest']);
+        Route::get('/isSent-request/{requestedId}', [ProfileController::class,'isUserSentRequest']);
+        Route::delete('/delete-request/{requestedId}', [ProfileController::class,'deleteRequest']);
+
     });
     ############### End Profile ##################
 
